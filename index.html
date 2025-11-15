@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sanpreet Singh – Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
+    <style>
+        /* Base 3D Setup */
+        .perspective { perspective: 1000px; }
+        .transform-style { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+
+        /* Cursor Spot CSS - Sky Blue Glow (Applies to whole page) */
+        #cursor-spot {
+            position: fixed;
+            width: 250px; 
+            height: 250px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.4) 0%, rgba(56, 189, 248, 0.0) 70%);
+            border-radius: 50%;
+            pointer-events: none; 
+            transform: translate(-50%, -50%); 
+            transition: opacity 0.3s ease, transform 0.1s linear; 
+            z-index: 9999; 
+            mix-blend-mode: hard-light; 
+            opacity: 0.8;
+            /* Added animation */
+            animation: pulse-glow 4s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            from { filter: brightness(1.0); }
+            to { filter: brightness(1.5); }
+        }
+
+        /* Enhanced 3D Effect for Projects Cards (Subtle Lift) */
+        .project-card-3d { 
+            transition: transform 0.3s ease, box-shadow 0.3s ease; 
+        }
+        .project-card-3d:hover {
+            transform: translateZ(20px) rotateX(1deg) rotateY(1deg) scale(1.03); 
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7); 
+        }
+
+        /* Styling for the expertise boxes */
+        .expertise-box {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer; 
+        }
+        .expertise-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4); 
+        }
+
+        /* --- NEW ROBOT STYLES --- */
+
+        /* Container for the whole robot to track cursor */
+        #interactive-robot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transform-style: preserve-3d; /* Allows for 3D tilt tracking */
+            transition: transform 0.1s ease-out; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+        }
+
+        /* Robot Head (Circle with Blinking Eyes) */
+        #robot-head-3d {
+            position: relative; 
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, #3b82f6 0%, #1e3a8a 100%); 
+            border: 4px solid #6366f1; 
+            box-shadow: 0 0 30px #6366f1, inset 0 0 15px #a5b4fc; 
+            margin-bottom: -5px; /* Slight overlap with body */
+        }
+        
+        /* Robot Eyes */
+        #robot-eyes {
+            display: flex;
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .robot-eye {
+            width: 12px;
+            height: 12px;
+            background-color: #a5b4fc; 
+            border-radius: 50%;
+            box-shadow: 0 0 8px #a5b4fc, 0 0 15px #e0e7ff;
+            animation: blink 4s infinite ease-in-out;
+            margin: 0 8px; 
+        }
+
+        @keyframes blink {
+            0%, 30%, 35%, 100% { transform: scale(1); opacity: 1; }
+            32.5% { transform: scale(0.1); opacity: 0; }
+        }
+
+        /* Robot Body - Dot & Triangle Pattern */
+        #robot-body-container {
+            position: relative;
+            /* width: 120px; */
+        }
+
+        .robot-torso {
+            width: 80px;
+            height: 120px;
+            border-radius: 10px;
+            background: linear-gradient(to bottom, #4f46e5, #3730a3);
+            position: relative;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.7);
+            margin-bottom: 5px;
+        }
+        /* Torso Dots */
+        .robot-torso::before, .robot-torso::after {
+            content: '';
+            position: absolute;
+            background-color: #a5b4fc; 
+            border-radius: 50%;
+            width: 6px;
+            height: 6px;
+            box-shadow: 0 0 5px #a5b4fc;
+        }
+        .robot-torso::before { top: 15px; left: 10px; box-shadow: 0 0 5px #a5b4fc, 30px 0 #a5b4fc, 60px 0 #a5b4fc; }
+        .robot-torso::after { top: 40px; left: 10px; box-shadow: 0 0 5px #a5b4fc, 30px 0 #a5b4fc, 60px 0 #a5b4fc; }
+
+        /* Arms */
+        .robot-arm {
+            width: 15px;
+            height: 80px;
+            background-color: #6366f1;
+            position: absolute;
+            top: 5px;
+            border-radius: 5px;
+            box-shadow: 0 0 8px rgba(165, 180, 252, 0.5);
+            transform-origin: top center;
+        }
+        .robot-arm.left { left: -25px; transform: rotate(10deg); } /* Initial pose */
+        .robot-arm.right { right: -25px; transform: rotate(-10deg); }
+
+        /* Hands (Triangles) */
+        .robot-hand {
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 15px solid #a5b4fc; /* Triangle shape */
+            position: absolute;
+            top: 80px; 
+            box-shadow: 0 5px 10px rgba(165, 180, 252, 0.7);
+        }
+        .robot-arm.left > .robot-hand { left: -2.5px; } 
+        .robot-arm.right > .robot-hand { left: -7.5px; } 
+
+        /* Legs */
+        .robot-leg-container {
+            display: flex;
+            width: 80px; /* Same as torso */
+            justify-content: space-around;
+        }
+        .robot-leg {
+            width: 25px;
+            height: 90px;
+            background-color: #4f46e5;
+            border-radius: 5px;
+            position: relative;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.7);
+        }
+        /* Leg Dots */
+        .robot-leg::before {
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background-color: #a5b4fc;
+            border-radius: 50%;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 5px #a5b4fc, 0 30px #a5b4fc;
+        }
+
+        /* Feet (Triangles) */
+        .robot-foot {
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 10px solid #a5b4fc; /* Triangle shape */
+            position: absolute;
+            bottom: -10px; /* Extend slightly below the leg */
+            left: -2.5px;
+            box-shadow: 0 5px 15px rgba(165, 180, 252, 0.7);
+        }
+
+        /* New: Sky Falls Animation Styles (retained) */
+        #sky-falls-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: none;
+            overflow: hidden;
+        }
+        .star {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            animation: falling 3s linear infinite;
+        }
+        @keyframes falling {
+            0% { transform: translateY(-100vh) translateX(0); opacity: 0; }
+            5% { opacity: 1; }
+            100% { transform: translateY(100vh) translateX(200px); opacity: 0; }
+        }
+
+        /* New: Styling for the merged 'Activate' button (retained) */
+        #activate-button-container {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            background-color: #1e293b;
+            border-radius: 1rem;
+            border: 2px solid #6366f1;
+            cursor: pointer;
+        }
+        #activate-button {
+            padding: 1rem 3rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            background-color: #4f46e5;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px #6366f1;
+        }
+        #activate-button:hover {
+            background-color: #818cf8;
+            transform: scale(1.05);
+            box-shadow: 0 0 30px #a5b4fc;
+        }
+        /* img , video{
+            height: 20px;
+            padding-right: 7px;
+        } */
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-800 text-slate-100 font-sans">
+
+    <div id="cursor-spot"></div>
+
+    <div id="sky-falls-container"></div>
+
+    <header class="max-w-6xl mx-auto py-8 px-6 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-400 to-pink-400 flex items-center justify-center text-slate-900 font-bold">SS</div>
+            <div>
+                <h1 class="text-xl font-semibold">Sanpreet Singh</h1>
+                <p class="text-xs text-slate-300">AI Developer · Python Automator · Full Stack</p>
+            </div>
+        </div>
+        <nav class="flex items-center gap-4">
+            <a href="#projects" class="text-sm hover:underline">Projects</a>
+            <a href="#expertise" class="text-sm hover:underline">Expertise</a>
+            <a href="#skills" class="text-sm hover:underline">Skills</a>
+            <a href="#contact" class="text-sm hover:underline">Contact</a>
+            <a href="resume_3 (5).pdf" class="ml-4 inline-block px-3 py-1 rounded bg-indigo-500 text-white text-sm" download>Download Resume</a>
+        </nav>
+    </header>
+
+    <section class="max-w-6xl mx-auto grid md:grid-cols-2 gap-8 items-center px-6">
+        <div class="p-6 rounded-2xl bg-slate-800/60 border border-slate-700">
+            <h2 class="text-3xl font-bold mb-2">Hi — I’m Sanpreet.</h2>
+            <p class="text-slate-300 mb-4">I build Python automation, AI-integrated bots, and animated dashboards combining data science and web dev.</p>
+            <div class="flex gap-3">
+                <a href="https://github.com/Sanpreet0415?tab=repositories" class="px-4 py-2 bg-indigo-500 rounded text-sm">See Projects</a>
+                <a href="#contact" class="px-4 py-2 border border-slate-600 rounded text-sm">Contact Me</a>
+            </div>
+        </div>
+        
+        <div id="robot-container" class="w-full min-h-64 rounded-2xl bg-slate-900/40 border border-slate-700 relative overflow-hidden perspective flex items-center justify-center">
+            
+            <div id="interactive-robot">
+                
+                <div id="robot-head-3d">
+                    <div id="robot-eyes">
+                        <div class="robot-eye"></div>
+                        <div class="robot-eye"></div>
+                    </div>
+                    </div>
+
+                <div id="robot-body-container">
+                    <div class="robot-torso">
+                        <div class="robot-arm left">
+                            <div class="robot-hand"></div>
+                        </div>
+                        <div class="robot-arm right">
+                            <div class="robot-hand"></div>
+                        </div>
+                    </div>
+
+                    <div class="robot-leg-container">
+                        <div class="robot-leg">
+                            <div class="robot-foot"></div>
+                        </div>
+                        <div class="robot-leg">
+                            <div class="robot-foot"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <canvas id="heroCanvas" class="absolute top-0 left-0 w-full h-full rounded-2xl"></canvas>
+        </div>
+    </section>
+    
+    <section id="expertise" class="max-w-6xl mx-auto mt-16 px-6">
+        <h3 class="text-3xl font-bold mb-8 text-center text-indigo-400">Core Expertise</h3>
+        
+        <div id="expertise-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <div id="box-1" class="expertise-box p-4 rounded-2xl bg-slate-800/70 border border-indigo-700/50 overflow-hidden">
+                <div class="h-40 mb-4 bg-slate-900/70 rounded-xl overflow-hidden">
+                    <img src="Gemini_Generated_Image_ld42mxld42mxld42 (1).png" alt="Futuristic AI Bot and Network" class="w-full h-full object-cover object-center" />
+                </div>
+                <h4 class="text-xl font-bold mb-1 flex items-center gap-2">
+                    <i class="devicon-python-plain colored"></i> Python Bot & AI Automation
+                </h4>
+                <p class="text-slate-300 text-sm mb-3">
+                    Advanced **multi-platform bot** development for autonomous operations, integrating communication channels and LLM APIs.
+                </p>
+            </div>
+
+            <div id="box-2" class="expertise-box p-4 rounded-2xl bg-slate-800/70 border border-indigo-700/50 overflow-hidden">
+                <div class="h-40 mb-4 bg-slate-900/70 rounded-xl overflow-hidden">
+                    <img src="Gemini_Generated_Image_ld42mxld42mxld42.png" alt="Trading Analysis Screen with Candlesticks" class="w-full h-full object-cover object-center" />
+                </div>
+                <h4 class="text-xl font-bold mb-1 flex items-center gap-2">
+                    <i class="devicon-plotly-plain colored"></i> Trading Automation & Analysis
+                </h4>
+                <p class="text-slate-300 text-sm mb-3">
+                    Building robust, high-frequency systems for real-time market data analysis and automated execution using specialized broker APIs.
+                </p>
+            </div>
+
+            <div id="box-3" class="expertise-box p-4 rounded-2xl bg-slate-800/70 border border-indigo-700/50 overflow-hidden">
+                <div class="h-40 mb-4 bg-slate-900/70 rounded-xl overflow-hidden">
+                    <img src="Gemini_Generated_Image_ld42mxld42mxld42 (2).png" alt="React Development UI Components" class="w-full h-full object-cover object-center" />
+                </div>
+                <h4 class="text-xl font-bold mb-1 flex items-center gap-2">
+                    <i class="devicon-react-original colored"></i> Full Stack Web & App Design
+                </h4>
+                <p class="text-slate-300 text-sm mb-3">
+                    Seamlessly designing and deploying dynamic web interfaces and cross-platform mobile apps with modern JavaScript and Python libraries.
+                </p>
+            </div>
+
+            <div id="merged-box" class="col-span-1 md:col-span-3 h-64 mt-8 hidden">
+                <div id="activate-button-container">
+                    <button id="activate-button">Activate System (Click for "Sky Falls")</button>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="projects" class="max-w-6xl mx-auto mt-16 px-6">
+        <h3 class="text-3xl font-bold mb-8 text-center text-indigo-400">Highlighted Projects</h3>
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="relative group perspective">
+                <div class="project-card-3d relative w-full h-48 rounded-2xl shadow-lg transform-style transition-transform duration-700 group-hover:rotate-y-180 bg-slate-800/70 border border-slate-700">
+                    <div class="absolute w-full h-full backface-hidden p-6 flex flex-col justify-center">
+                        <h4 class="font-semibold text-xl mb-2 text-white">Python Automation</h4>
+                        <p class="text-slate-300 text-sm">Automated ETL pipelines and trading bots with Pandas, NumPy, and FastAPI.</p>
+                    </div>
+                    <div class="absolute w-full h-full backface-hidden rotate-y-180 flex items-center justify-center p-6 text-center text-indigo-400 font-semibold">
+                        View Project →
+                    </div>
+                </div>
+            </div>
+            <div class="relative group perspective">
+                <div class="project-card-3d relative w-full h-48 rounded-2xl shadow-lg transform-style transition-transform duration-700 group-hover:rotate-y-180 bg-slate-800/70 border border-slate-700">
+                    <div class="absolute w-full h-full backface-hidden p-6 flex flex-col justify-center">
+                        <h4 class="font-semibold text-xl mb-2 text-white">AI Integration</h4>
+                        <p class="text-slate-300 text-sm">ChatGPT-integrated Discord & Telegram bots for conversational automation.</p>
+                    </div>
+                    <div class="absolute w-full h-full backface-hidden rotate-y-180 flex items-center justify-center p-6 text-center text-indigo-400 font-semibold">
+                        View Project →
+                    </div>
+                </div>
+            </div>
+            <div class="relative group perspective">
+                <div class="project-card-3d relative w-full h-48 rounded-2xl shadow-lg transform-style transition-transform duration-700 group-hover:rotate-y-180 bg-slate-800/70 border border-slate-700">
+                    <div class="absolute w-full h-full backface-hidden p-6 flex flex-col justify-center">
+                        <h4 class="font-semibold text-xl mb-2 text-white">Web Visualization</h4>
+                        <p class="text-slate-300 text-sm">Animated dashboards with Framer Motion, GSAP, and interactive visuals.</p>
+                    </div>
+                    <div class="absolute w-full h-full backface-hidden rotate-y-180 flex items-center justify-center p-6 text-center text-indigo-400 font-semibold">
+                        View Project →
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="skills" class="max-w-6xl mx-auto mt-16 px-6">
+        <h3 class="text-3xl font-bold mb-6 text-center text-indigo-400">Skills & Tools</h3>
+        <div class="flex flex-wrap justify-center gap-4">
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer flex items-center"><i class="devicon-python-plain colored text-lg mr-2"></i> Python</span>
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer flex items-center"><i class="devicon-flask-original colored text-lg mr-2"></i> Flask</span>
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer flex items-center"><i class="devicon-django-plain colored text-lg mr-2"></i> Django</span>
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer flex items-center"><i class="devicon-html5-plain colored text-lg mr-2"></i> HTML</span>
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer flex items-center"><i class="devicon-react-original colored text-lg mr-2"></i> React</span>
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer flex items-center"><i class="devicon-fastapi-plain colored text-lg mr-2"></i> FastAPI</span>            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer">GSAP</span>
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer flex items-center"><i class="devicon-tableau-plain colored text-lg mr-2"></i> Tableau</span>
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer flex items-center"><i class="devicon-matplotlib-plain colored text-lg mr-2"></i> <img src="Screenshot 2025-11-15 171651.png" alt="" style="height: 20px;"> Matplotlib</span>
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer flex items-center"><i class="devicon-youtube-plain colored text-lg mr-2"></i> YouTubePy</span>
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer">ReactPy</span>
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer flex items-center"><i class="devicon-reactnative-plain colored text-lg mr-2"></i> React Native</span>
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer" >Chakra UI</span>
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer flex items-center"><i class="devicon-tailwindcss-plain colored text-lg mr-2"></i> TailwindCSS</span>
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer flex items-center"><i class="devicon-bootstrap-plain colored text-lg mr-2"></i> Bootstrap</span>
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer flex items-center"><i class="devicon-discord-plain colored text-lg mr-2"></i> ChatBot</span>
+                        <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer flex items-center"><i class="devicon-discord-plain colored text-lg mr-2"></i> Uvicorn</span>
+
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer">ImgToTxt</span>
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer">TxtToVideo</span>
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer">TxtToImg</span>
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer flex items-center"><i class="devicon-openai-plain colored text-lg mr-2"></i> ChatGPT & Gemini API</span>
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer">TradeBot</span>
+            <span class="px-4 py-2 bg-slate-800/70 border border-slate-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-110 hover:bg-indigo-500 hover:text-white cursor-pointer">Tesseract</span>
+        </div>
+    </section>
+
+    ---
+
+    <section id="contact" class="max-w-6xl mx-auto mt-12 px-6">
+        <h3 class="text-2xl font-semibold mb-4">Contact</h3>
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="p-6 rounded-2xl bg-slate-900/40 border border-slate-700">
+                <p class="text-slate-300 mb-4">Want to collaborate? Drop a message:</p>
+                <form class="flex flex-col gap-3">
+                    <input placeholder="Name" class="p-2 rounded bg-slate-800 border border-slate-700" required>
+                    <input placeholder="Email" class="p-2 rounded bg-slate-800 border border-slate-700" required>
+                    <textarea placeholder="Message" rows="4" class="p-2 rounded bg-slate-800 border border-slate-700" required></textarea>
+                    <button type="submit" class="px-3 py-2 bg-indigo-500 rounded">Send</button>
+                </form>
+            </div>
+            <div class="p-6 rounded-2xl bg-slate-900/40 border border-slate-700">
+                <h4 class="font-semibold">Socials</h4>
+                <ul class="mt-3 text-slate-300">
+                    <li>GitHub: <a href="https://github.com/hermit-portfolio?tab=repositories" class="underline">Sanpreet-Python-Project</a></li>
+                    <li>Telegram: <span class="italic">@Sanpreet</span></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-8 text-center text-slate-500">© 2025 Sanpreet Singh — Built with - Tailwind - CSS - REACT - PYTHON</footer>
+
+    <script>
+        // --- 1. HERO CANVAS ANIMATION SCRIPT (Modified to follow cursor) ---
+        const canvas = document.getElementById('heroCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Store cursor position relative to the canvas
+        let mouse = {
+            x: -100, 
+            y: -100
+        };
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            mouse.x = -100;
+            mouse.y = -100;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Update mouse position only when over the canvas
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = e.clientX - rect.left;
+            mouse.y = e.clientY - rect.top;
+        });
+
+        // Move mouse off-screen when not over the canvas
+        canvas.addEventListener('mouseout', () => {
+            mouse.x = -100;
+            mouse.y = -100;
+        });
+
+
+        const particles = [];
+        const particleCount = 80;
+        const connectionDistance = 150; 
+
+        for (let i = 0; i < particleCount; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: (Math.random() - 0.5) * 0.5,
+                size: Math.random() * 2 + 1,
+                color: `hsl(${Math.random() * 360}, 80%, 60%)`
+            });
+        }
+
+        function drawConnections(p1, p2) {
+            const dx = p1.x - p2.x;
+            const dy = p1.y - p2.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            
+            if (dist < connectionDistance) {
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                // Dynamic opacity: closer lines are brighter
+                ctx.strokeStyle = `rgba(100,150,255,${1 - dist/connectionDistance})`;
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+            });
+
+            // 1. Draw connections between particles and the cursor
+            for (let i = 0; i < particleCount; i++) {
+                drawConnections(particles[i], mouse);
+
+                // 2. Draw connections between particles (The original web)
+                for (let j = i+1; j < particleCount; j++) {
+                    drawConnections(particles[i], particles[j]);
+                }
+            }
+            
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // --- 2. CURSOR SPOT SCRIPT (Glow effect for the whole page) & Robot Tracking ---
+        const cursorSpot = document.getElementById('cursor-spot');
+        const interactiveRobot = document.getElementById('interactive-robot');
+        const robotContainer = document.getElementById('robot-container');
+
+        document.addEventListener('mousemove', (e) => {
+            // Global Cursor Spot
+            cursorSpot.style.left = e.clientX + 'px';
+            cursorSpot.style.top = e.clientY + 'px';
+
+            // Robot tracking (Tilt effect based on cursor position)
+            const rect = robotContainer.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            const dx = e.clientX - centerX;
+            const dy = e.clientY - centerY;
+            
+            // Normalize distance to get rotation angles
+            const maxTilt = 10; // degrees
+            const rotateY = -(dx / (rect.width / 2)) * maxTilt;
+            const rotateX = (dy / (rect.height / 2)) * maxTilt;
+
+            // Apply 3D transform to the entire robot container
+            interactiveRobot.style.transform = `translate(-50%, -50%) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+
+
+        // --- 3. INTERACTIVE EXPERTISE BOXES & "SKY FALLS" LOGIC ---
+        const expertiseBoxes = [
+            document.getElementById('box-1'),
+            document.getElementById('box-2'),
+            document.getElementById('box-3')
+        ];
+        const mergedBox = document.getElementById('merged-box');
+        const activateButtonContainer = document.getElementById('activate-button-container');
+        const activateButton = document.getElementById('activate-button');
+
+        let clickCount = 0;
+
+        expertiseBoxes.forEach((box, index) => {
+            box.addEventListener('click', () => {
+                // Prevent clicking after merge
+                if (mergedBox.style.display === 'block') return;
+
+                // Simple Visual Click Feedback
+                box.classList.toggle('border-indigo-500');
+                box.classList.toggle('scale-95');
+                setTimeout(() => {
+                    box.classList.toggle('scale-95');
+                }, 150);
+
+                clickCount++;
+
+                if (clickCount >= 3) {
+                    // Trigger the merge effect
+                    expertiseBoxes.forEach(b => b.style.display = 'none');
+                    mergedBox.style.display = 'block';
+                    activateButtonContainer.style.display = 'flex';
+
+                    // Optional: Scroll to the merged box
+                    mergedBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        });
+
+        // "Sky Falls" Animation Handler
+        activateButton.addEventListener('click', () => {
+            const container = document.getElementById('sky-falls-container');
+            container.style.display = 'block';
+
+            // Generate a large number of 'stars' (simple divs) for the falling effect
+            const starCount = 150;
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                // Randomize initial position
+                star.style.left = Math.random() * 100 + 'vw';
+                star.style.top = Math.random() * 100 + 'vh';
+                // Randomize animation duration and delay
+                star.style.animationDuration = (Math.random() * 2 + 3) + 's';
+                star.style.animationDelay = (Math.random() * -3) + 's';
+                // Randomize size
+                star.style.width = star.style.height = (Math.random() * 3 + 1) + 'px';
+                container.appendChild(star);
+            }
+
+            // After a few seconds, clean up and reset
+            setTimeout(() => {
+                container.style.display = 'none';
+                container.innerHTML = '';
+                
+                // Reset the expertise boxes
+                expertiseBoxes.forEach(b => {
+                    b.style.display = 'block';
+                    b.classList.remove('border-indigo-500');
+                });
+                mergedBox.style.display = 'none';
+                activateButtonContainer.style.display = 'none';
+                clickCount = 0;
+
+            }, 5000); // Animation runs for 5 seconds
+        });
+    </script>
+
+</body>
+</html>
